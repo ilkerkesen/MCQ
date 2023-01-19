@@ -68,7 +68,10 @@ class MCQVideoDataset(Dataset):
                  cut=None,
                  subsample=1,
                  sliding_window_stride=-1,
-                 reader='cv2'
+                 reader='cv2',
+                 metadata_filename=None,
+                 quva_dir=None,
+                 something_something_dir=None,
                  ):
         self.dataset_name = dataset_name
         self.text_params = text_params
@@ -87,6 +90,18 @@ class MCQVideoDataset(Dataset):
         self.sliding_window_stride = sliding_window_stride
         self.video_reader = video_reader[reader]
         self.label_type = 'caption'
+
+        # vl-bench adaptation
+        self.metadata_filename = metadata_filename
+        self.quva_dir = quva_dir
+        if quva_dir is not None:
+            self.quva_dir = os.path.abspath(os.path.expanduser(quva_dir))
+        self.something_something_dir = something_something_dir
+        if something_something_dir is not None:
+            self.something_something_dir = os.path.abspath(os.path.expanduser(
+                something_something_dir
+            ))
+
         self._load_metadata()
         self.Tokenizer = transformers.AutoTokenizer.from_pretrained("distilbert-base-uncased",
                                                                     TOKENIZERS_PARALLELISM=False)
@@ -219,7 +234,10 @@ class TextVideoDataset(Dataset):
                  cut=None,
                  subsample=1,
                  sliding_window_stride=-1,
-                 reader='cv2'
+                 reader='cv2',
+                 metadata_filename=None,
+                 quva_dir=None,
+                 something_something_dir=None,
                  ):
         self.dataset_name = dataset_name
         self.text_params = text_params
@@ -237,6 +255,18 @@ class TextVideoDataset(Dataset):
         self.sliding_window_stride = sliding_window_stride
         self.video_reader = video_reader[reader]
         self.label_type = 'caption'
+
+        # vl-bench adaptation
+        self.metadata_filename = metadata_filename
+        self.quva_dir = quva_dir
+        if quva_dir is not None:
+            self.quva_dir = os.path.abspath(os.path.expanduser(quva_dir))
+        self.something_something_dir = something_something_dir
+        if something_something_dir is not None:
+            self.something_something_dir = os.path.abspath(os.path.expanduser(
+                something_something_dir
+            ))
+
         self._load_metadata()
         self.Tokenizer = transformers.AutoTokenizer.from_pretrained("distilbert-base-uncased", TOKENIZERS_PARALLELISM=False)
         if self.sliding_window_stride != -1:

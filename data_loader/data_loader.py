@@ -3,6 +3,7 @@ from data_loader.transforms import init_transform_dict
 from data_loader.ConceptualCaptions_dataset import ConceptualCaptions3M
 from data_loader.MSRVTT_dataset import MSRVTT
 from data_loader.WebVid_dataset import WebVid
+from data_loader.VLBench_dataset import VLBench, _collate_fn
 
 
 def dataset_loader(dataset_name,
@@ -16,7 +17,11 @@ def dataset_loader(dataset_name,
                    cut=None,
                    subsample=1,
                    sliding_window_stride=-1,
-                   reader='cv2'):
+                   reader='cv2',
+                   metadata_filename=None,
+                   quva_dir=None,
+                   something_something_dir=None,
+                   ):
     kwargs = dict(
         dataset_name=dataset_name,
         text_params=text_params,
@@ -41,6 +46,13 @@ def dataset_loader(dataset_name,
         dataset = WebVid(**kwargs)
     elif dataset_name == "ConceptualCaptions3M":
         dataset = ConceptualCaptions3M(**kwargs)
+    elif dataset_name == "VLBench":
+        dataset = VLBench(
+            **kwargs,
+            metadata_filename=metadata_filename,
+            quva_dir=quva_dir,
+            something_something_dir=something_something_dir,
+        )
     else:
         raise NotImplementedError(f"Dataset: {dataset_name} not found.")
 
@@ -65,14 +77,44 @@ class MultiDistTextVideoDataLoader(MultiDistBaseDataLoaderExplicitSplit):
                  reader='cv2',
                  batch_size=1,
                  num_workers=1,
-                 shuffle=True):
+                 shuffle=True,
+                 metadata_filename=None,
+                 quva_dir=None,
+                 something_something_dir=None,
+                 ):
         if tsfm_params is None:
             tsfm_params = {}
         tsfm_dict = init_transform_dict(**tsfm_params)
         tsfm = tsfm_dict[split]
-        dataset = dataset_loader(dataset_name, text_params, video_params, data_dir, question,
-                                 metadata_dir, split, tsfm, cut, subsample, sliding_window_stride, reader)
-        super().__init__(args, dataset, batch_size, shuffle, num_workers)
+        dataset = dataset_loader(
+            dataset_name,
+            text_params,
+            video_params,
+            data_dir,
+            question,
+            metadata_dir=metadata_dir,
+            split=split,
+            tsfms=tsfm,
+            cut=cut,
+            subsample=subsample,
+            sliding_window_stride=sliding_window_stride,
+            reader=reader,
+            metadata_filename=metadata_filename,
+            quva_dir=quva_dir,
+            something_something_dir=something_something_dir,
+        )
+
+        collate_fn = None
+        if type(dataset) is VLBench:
+            collate_fn = _collate_fn
+
+        super().__init__(
+            dataset,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+        )
         self.dataset_name = dataset_name
 
 
@@ -92,18 +134,47 @@ class TextVideoDataLoader(BaseDataLoaderExplicitSplit):
                  reader='cv2',
                  batch_size=1,
                  num_workers=1,
-                 shuffle=True):
+                 shuffle=True,
+                 metadata_filename=None,
+                 quva_dir=None,
+                 something_something_dir=None,
+                 ):
         if tsfm_params is None:
             tsfm_params = {}
         tsfm_dict = init_transform_dict(**tsfm_params)
         tsfm = tsfm_dict[split]
-        dataset = dataset_loader(dataset_name, text_params, video_params, data_dir, question, metadata_dir, split, tsfm, cut,
-                                 subsample, sliding_window_stride, reader)
+        dataset = dataset_loader(
+            dataset_name,
+            text_params,
+            video_params,
+            data_dir,
+            question,
+            metadata_dir=metadata_dir,
+            split=split,
+            tsfms=tsfm,
+            cut=cut,
+            subsample=subsample,
+            sliding_window_stride=sliding_window_stride,
+            reader=reader,
+            metadata_filename=metadata_filename,
+            quva_dir=quva_dir,
+            something_something_dir=something_something_dir,
+        )
 
-        super().__init__(dataset, batch_size, shuffle, num_workers)
+        collate_fn = None
+        if type(dataset) is VLBench:
+            collate_fn = _collate_fn
+
+        super().__init__(
+            dataset,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+        )
         self.dataset_name = dataset_name
-       
-      
+
+
 class TextVideoDataLoader_CLIP(BaseDataLoaderExplicitSplit):
     def __init__(self,
                  dataset_name,
@@ -120,13 +191,42 @@ class TextVideoDataLoader_CLIP(BaseDataLoaderExplicitSplit):
                  reader='cv2',
                  batch_size=1,
                  num_workers=1,
-                 shuffle=True):
+                 shuffle=True,
+                 metadata_filename=None,
+                 quva_dir=None,
+                 something_something_dir=None,
+                 ):
         if tsfm_params is None:
             tsfm_params = {}
         tsfm_dict = init_transform_dict_clip(**tsfm_params)
         tsfm = tsfm_dict[split]
-        dataset = dataset_loader(dataset_name, text_params, video_params, data_dir, question, metadata_dir, split, tsfm, cut,
-                                 subsample, sliding_window_stride, reader)
+        dataset = dataset_loader(
+            dataset_name,
+            text_params,
+            video_params,
+            data_dir,
+            question,
+            metadata_dir=metadata_dir,
+            split=split,
+            tsfms=tsfm,
+            cut=cut,
+            subsample=subsample,
+            sliding_window_stride=sliding_window_stride,
+            reader=reader,
+            metadata_filename=metadata_filename,
+            quva_dir=quva_dir,
+            something_something_dir=something_something_dir,
+        )
 
-        super().__init__(dataset, batch_size, shuffle, num_workers)
+        collate_fn = None
+        if type(dataset) is VLBench:
+            collate_fn = _collate_fn
+
+        super().__init__(
+            dataset,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+        )
         self.dataset_name = dataset_name

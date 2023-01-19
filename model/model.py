@@ -92,6 +92,7 @@ class MCQ(BaseModel):
         video_embeddings = self.vid_proj(video_embeddings)
         return video_embeddings
 
+
 def sim_matrix(a, b, eps=1e-8):
     """
     added eps for numerical stability
@@ -101,6 +102,15 @@ def sim_matrix(a, b, eps=1e-8):
     b_norm = b / torch.max(b_n, eps * torch.ones_like(b_n))
     sim_mt = torch.mm(a_norm, b_norm.transpose(0, 1))
     return sim_mt
+
+
+def compute_similarity(a, b, a_mask=None, b_mask=None, style='single', eps=1e-8, return_raw=False, temp=0.5):
+    if style == 'single':
+        sim = sim_matrix(a, b, eps=eps)
+        return sim, sim.t()
+    else:
+        raise NotImplementedError
+
 
 if __name__ == "__main__":
     pass

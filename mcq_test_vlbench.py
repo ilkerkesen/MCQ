@@ -8,7 +8,7 @@ import data_loader.data_loader as module_data
 import model.metric as module_metric
 import model.model as module_arch
 from parse_config import ConfigParser
-from model.model import sim_matrix
+from model.model import sim_matrix, compute_similarity
 from sacred import Experiment
 from utils.util import state_dict_data_parallel_fix
 from trainer.trainer import verbose
@@ -50,65 +50,33 @@ def run():
     model = model.to(device)
     model.eval()
 
-    meta_arr = []
-    text_embed_arr = []
-    vid_embed_arr = []
+    num_correct = num_examples = 0
     print(len(data_loader))
     with torch.no_grad():
         for i, data in tqdm(tqdm(enumerate(data_loader))):
-            # leave this for now since not doing anything on the gpu
-            meta_arr.append(data['meta'])
-            if tokenizer is not None:
-                data['text'] = tokenizer(data['text'], return_tensors='pt', padding=True, truncation=True)
-            data['text'] = {key: val.cuda() for key, val in data['text'].items()}
-            if isinstance(data['video'], list):
-                data['video'] = [x.to(device) for x in data['video']]
-            else:
-                data['video'] = data['video'].to(device)
-
-            text_embed, vid_embed = model(data, return_embeds=True)
-            text_embed_arr.append(text_embed)
-            vid_embed_arr.append(vid_embed)
-
-    text_embeds = torch.cat(text_embed_arr)
-    vid_embeds = torch.cat(vid_embed_arr)
-
-    mask = None
-    if data_loader.dataset.sliding_window_stride != -1:
-        cpu_vid_embeds = vid_embeds.cpu().detach()
-        cpu_text_embeds = text_embeds.cpu().detach()
-
-        li_vid_embeds = [x for x in cpu_vid_embeds]
-        li_txt_embeds = [x for x in cpu_text_embeds]
-        videoids = pd.Series([x['paths'] for x in meta_arr]).explode()
-        raw_caps = pd.Series([x['raw_captions']] for x in meta_arr).explode().explode()
-        vid_df = pd.DataFrame({'videoid': videoids, 'vid_embed': li_vid_embeds, 'txt_embed': li_txt_embeds,
-                               'captions': raw_caps})
-        new_vid_embeds = []
-        new_txt_embeds = []
-        for vid in vid_df['videoid'].unique():
-            tdf = vid_df[vid_df['videoid'] == vid]
-            tvembeds = torch.stack(tdf['vid_embed'].values.tolist())
-            tvembeds = tvembeds.mean(dim=0)
-            new_vid_embeds.append(tvembeds)
-
-            for cap in tdf['captions'].unique():
-                cdf = vid_df[vid_df['captions'] == cap]
-                ttembeds = torch.stack(cdf['txt_embed'].values.tolist())
-                new_txt_embeds.append(ttembeds[0])
-
-        vid_embeds = torch.stack(new_vid_embeds).cuda()
-        text_embeds = torch.stack(new_txt_embeds).cuda()
-
-    sims = sim_matrix(text_embeds, vid_embeds)
-    sims = sims.detach().cpu().numpy()
-
-    nested_metrics = {}
-    for metric in metric_fns:
-        metric_name = metric.__name__
-        res = metric(sims, query_masks=mask)
-        verbose(epoch=0, metrics=res, name="", mode=metric_name)
-        nested_metrics[metric_name] = res
+            text_inputs = tokenizer(
+                data['text'],
+                return_tensors='pt',
+                padding=True,
+                truncation=True,
+            ).to('cuda:0')
+            data['video'] = data['video'].to(device)
+            inputs = {
+                'video': data['video'],
+                'text': text_inputs,
+            }
+            text_embeds, vid_embeds = model(inputs)
+            output, _ = compute_similarity(text_embeds, vid_embeds)
+            batch_size, offset = vid_embeds.shape[0], 0
+            for i in range(batch_size):
+                num_text = data['num_text'][i]
+                this = output[offset:offset+num_text, i]
+                if this.argmax().item() == 0:
+                    num_correct += 1
+                num_examples += 1
+                offset += num_text
+    acc = round(100 * num_correct / num_examples, 2)
+    print(f'accuracy={acc}%')
 
 
 if __name__ == '__main__':
