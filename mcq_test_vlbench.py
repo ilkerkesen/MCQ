@@ -1,4 +1,6 @@
 import argparse
+import os.path as osp
+import json
 import torch
 import transformers
 import pandas as pd
@@ -24,6 +26,7 @@ def run():
     config._config['data_loader']['args']['metadata_filename'] = args.metadata_filename
     config._config['data_loader']['args']['quva_dir'] = args.quva_dir
     config._config['data_loader']['args']['something_something_dir'] = args.something_something_dir
+    config._config['data_loader']['args']['proficiency'] = args.proficiency
     data_loader = config.initialize('data_loader', module_data)
     tokenizer = transformers.AutoTokenizer.from_pretrained(config['arch']['args']['text_params']['model'])
 
@@ -50,6 +53,7 @@ def run():
     model = model.to(device)
     model.eval()
 
+    results = dict()
     num_correct = num_examples = 0
     print(len(data_loader))
     with torch.no_grad():
@@ -71,12 +75,12 @@ def run():
             for i in range(batch_size):
                 num_text = data['num_text'][i]
                 this = output[offset:offset+num_text, i]
-                if this.argmax().item() == 0:
-                    num_correct += 1
-                num_examples += 1
+                results[data['key'][i]] = {'scores': this.tolist()}
                 offset += num_text
-    acc = round(100 * num_correct / num_examples, 2)
-    print(f'accuracy={acc}%')
+
+    with open(config._config['output_file'], 'w') as f:
+        json.dump(results, f, indent=4)
+    print('done.')
 
 
 if __name__ == '__main__':
@@ -96,11 +100,15 @@ if __name__ == '__main__':
                       help='full path to the QUVA dataset root dir.')
     args.add_argument('--something_something_dir', default=None,
                       help='full path to the something something dataset (v2) video dir.')
+    args.add_argument('-o', '--output_file', default=None, required=True)
+    args.add_argument("--proficiency", action="store_true",
+                      help="use the profiency task captions.")
 
     config = ConfigParser(args, test=True)
     # hack to get sliding into config
     args = args.parse_args()
     config._config['sliding_window_stride'] = args.sliding_window_stride
+    config._config['output_file'] = osp.abspath(osp.expanduser(args.output_file))
     ex.add_config(config.config)
 
     ex.run()

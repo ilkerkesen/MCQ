@@ -1,5 +1,6 @@
 import json
 import os
+import os.path as osp
 import random
 
 import torch
@@ -72,7 +73,11 @@ class VLBench(TextVideoDataset):
     def __getitem__(self, index):
         key = self.keys[index]
         item = self.metadata[key]
-        caption, foils = item['caption'], item['foils']
+        caption = item['caption']
+        foils = item['foils']
+        if self.proficiency:
+            caption = item['proficiency']['caption']
+            foils = item['proficiency']['foils']
         frame_sample = 'uniform' if self.split == 'test' else 'rand'
         frames, frame_indices = self._read_video(
             item,

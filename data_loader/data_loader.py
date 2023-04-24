@@ -21,6 +21,7 @@ def dataset_loader(dataset_name,
                    metadata_filename=None,
                    quva_dir=None,
                    something_something_dir=None,
+                   proficiency=False,
                    ):
     kwargs = dict(
         dataset_name=dataset_name,
@@ -52,6 +53,7 @@ def dataset_loader(dataset_name,
             metadata_filename=metadata_filename,
             quva_dir=quva_dir,
             something_something_dir=something_something_dir,
+            proficiency=proficiency,
         )
     else:
         raise NotImplementedError(f"Dataset: {dataset_name} not found.")
@@ -81,6 +83,7 @@ class MultiDistTextVideoDataLoader(MultiDistBaseDataLoaderExplicitSplit):
                  metadata_filename=None,
                  quva_dir=None,
                  something_something_dir=None,
+                 proficiency=False,
                  ):
         if tsfm_params is None:
             tsfm_params = {}
@@ -102,6 +105,7 @@ class MultiDistTextVideoDataLoader(MultiDistBaseDataLoaderExplicitSplit):
             metadata_filename=metadata_filename,
             quva_dir=quva_dir,
             something_something_dir=something_something_dir,
+            proficiency=proficiency,
         )
 
         collate_fn = None
@@ -138,6 +142,7 @@ class TextVideoDataLoader(BaseDataLoaderExplicitSplit):
                  metadata_filename=None,
                  quva_dir=None,
                  something_something_dir=None,
+                 proficiency=False,
                  ):
         if tsfm_params is None:
             tsfm_params = {}
@@ -159,6 +164,7 @@ class TextVideoDataLoader(BaseDataLoaderExplicitSplit):
             metadata_filename=metadata_filename,
             quva_dir=quva_dir,
             something_something_dir=something_something_dir,
+            proficiency=proficiency,
         )
 
         collate_fn = None
@@ -195,6 +201,7 @@ class TextVideoDataLoader_CLIP(BaseDataLoaderExplicitSplit):
                  metadata_filename=None,
                  quva_dir=None,
                  something_something_dir=None,
+                 proficiency=False,
                  ):
         if tsfm_params is None:
             tsfm_params = {}
@@ -216,6 +223,7 @@ class TextVideoDataLoader_CLIP(BaseDataLoaderExplicitSplit):
             metadata_filename=metadata_filename,
             quva_dir=quva_dir,
             something_something_dir=something_something_dir,
+            proficiency=proficiency,
         )
 
         collate_fn = None

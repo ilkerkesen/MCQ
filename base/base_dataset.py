@@ -238,6 +238,7 @@ class TextVideoDataset(Dataset):
                  metadata_filename=None,
                  quva_dir=None,
                  something_something_dir=None,
+                 proficiency=False,
                  ):
         self.dataset_name = dataset_name
         self.text_params = text_params
@@ -257,6 +258,7 @@ class TextVideoDataset(Dataset):
         self.label_type = 'caption'
 
         # vl-bench adaptation
+        self.proficiency = proficiency
         self.metadata_filename = metadata_filename
         self.quva_dir = quva_dir
         if quva_dir is not None:
