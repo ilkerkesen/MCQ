@@ -72,6 +72,7 @@ class MCQVideoDataset(Dataset):
                  metadata_filename=None,
                  quva_dir=None,
                  something_something_dir=None,
+                 youtube_dir=None,
                  ):
         self.dataset_name = dataset_name
         self.text_params = text_params
@@ -101,6 +102,9 @@ class MCQVideoDataset(Dataset):
             self.something_something_dir = os.path.abspath(os.path.expanduser(
                 something_something_dir
             ))
+        self.youtube_dir = youtube_dir
+        if youtube_dir is not None:
+            self.youtube_dir = os.path.abspath(os.path.expanduser(youtube_dir))
 
         self._load_metadata()
         self.Tokenizer = transformers.AutoTokenizer.from_pretrained("distilbert-base-uncased",
@@ -238,6 +242,7 @@ class TextVideoDataset(Dataset):
                  metadata_filename=None,
                  quva_dir=None,
                  something_something_dir=None,
+                 youtube_dir=None,
                  proficiency=False,
                  ):
         self.dataset_name = dataset_name
@@ -268,6 +273,9 @@ class TextVideoDataset(Dataset):
             self.something_something_dir = os.path.abspath(os.path.expanduser(
                 something_something_dir
             ))
+        self.youtube_dir = youtube_dir
+        if youtube_dir is not None:
+            self.youtube_dir = os.path.abspath(os.path.expanduser(youtube_dir))
 
         self._load_metadata()
         self.Tokenizer = transformers.AutoTokenizer.from_pretrained("distilbert-base-uncased", TOKENIZERS_PARALLELISM=False)

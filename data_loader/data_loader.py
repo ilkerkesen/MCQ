@@ -21,6 +21,7 @@ def dataset_loader(dataset_name,
                    metadata_filename=None,
                    quva_dir=None,
                    something_something_dir=None,
+                   youtube_dir=None,
                    proficiency=False,
                    ):
     kwargs = dict(
@@ -53,6 +54,7 @@ def dataset_loader(dataset_name,
             metadata_filename=metadata_filename,
             quva_dir=quva_dir,
             something_something_dir=something_something_dir,
+            youtube_dir=youtube_dir,
             proficiency=proficiency,
         )
     else:
@@ -83,6 +85,7 @@ class MultiDistTextVideoDataLoader(MultiDistBaseDataLoaderExplicitSplit):
                  metadata_filename=None,
                  quva_dir=None,
                  something_something_dir=None,
+                 youtube_dir=None,
                  proficiency=False,
                  ):
         if tsfm_params is None:
@@ -105,6 +108,7 @@ class MultiDistTextVideoDataLoader(MultiDistBaseDataLoaderExplicitSplit):
             metadata_filename=metadata_filename,
             quva_dir=quva_dir,
             something_something_dir=something_something_dir,
+            youtube_dir=youtube_dir,
             proficiency=proficiency,
         )
 
@@ -142,6 +146,7 @@ class TextVideoDataLoader(BaseDataLoaderExplicitSplit):
                  metadata_filename=None,
                  quva_dir=None,
                  something_something_dir=None,
+                 youtube_dir=None,
                  proficiency=False,
                  ):
         if tsfm_params is None:
@@ -164,6 +169,7 @@ class TextVideoDataLoader(BaseDataLoaderExplicitSplit):
             metadata_filename=metadata_filename,
             quva_dir=quva_dir,
             something_something_dir=something_something_dir,
+            youtube_dir=youtube_dir,
             proficiency=proficiency,
         )
 
@@ -201,6 +207,7 @@ class TextVideoDataLoader_CLIP(BaseDataLoaderExplicitSplit):
                  metadata_filename=None,
                  quva_dir=None,
                  something_something_dir=None,
+                 youtube_dir=None,
                  proficiency=False,
                  ):
         if tsfm_params is None:
@@ -223,6 +230,7 @@ class TextVideoDataLoader_CLIP(BaseDataLoaderExplicitSplit):
             metadata_filename=metadata_filename,
             quva_dir=quva_dir,
             something_something_dir=something_something_dir,
+            youtube_dir=youtube_dir,
             proficiency=proficiency,
         )
 
